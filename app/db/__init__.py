@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+from flask import g
 
 # using the .env file to fake the environment variable, in production DB_URL will be a proper variable.
 
@@ -18,3 +19,23 @@ Session = sessionmaker(bind=engine)
 
 # base helps map the models to sql tables
 Base = declarative_base()
+
+# exported to app init.py inorder to get flask app server running
+def init_db(app):
+    Base.metadata.create_all(engine)
+
+    app.teardown_appcontext(close_db)
+
+def get_db():
+    if 'db' not in g:
+        # store db connection in app context
+        g.db = Session()
+    return Session()
+
+# uses the g object, app context to close the database thread when the request terminates.
+def close_db(e=None):
+    db = g.pop('db', None)
+
+    if db is not None:
+        db.close()
+
