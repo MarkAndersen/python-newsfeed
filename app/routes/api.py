@@ -12,7 +12,7 @@ def signup():
     db = get_db()
     
    
-     # use bracket notation instead of dot notation because USER is not an object in python, it is a 'library', it is only an object when creating class and attaching methods to it
+     # use bracket notation instead of dot notation because USER is not an object in python, it is a 'dictionary', it is only an object when creating class and attaching methods to it
      # this creates a new instance of a 'User'
      # use a try .. except statement (like try-catch block in JS) for error handling, be very careful abount indentation
     try:
@@ -110,4 +110,64 @@ def upvote():
         return jsonify(message = 'Upvote failed'), 500
     
     return '', 204
+
+@bp.route('/posts', methods=['POST'])
+def create():
+    # connect to the db and capture the posted json data
+    data = request.get_json()
+    db = get_db()
+
+    try:
+        # create a new post
+        newPost = Post(
+            title = data['title'],
+            post_url = data['post_url'],
+            user_id = session.get('user_id')
+        )
+
+        db.add(newPost)
+        db.commit()
+    except:
+        print(sys.exc_info()[0])
+
+        db.rollback()
+        return jsonify(message = 'Post failed'), 500
+
+    return jsonify(id = newPost.id)
+
+@bp.route('/posts/<id>', methods=['PUT'])
+def update(id):
+    # connect to db and capture posted json data
+    data = request.get_json()
+    db = get_db()
+    # query one post table, filter by post id, return one post object
+    try:
+        post = db.query(Post).filter(Post.id == id).one()
+        post.title = data['title']
+        db.commit()
+    except:
+        print(sys.exc_info()[0])
+
+        db.rollback()
+        return jsonify(message = 'Post not found'), 404
+
+    return '', 204
+
+@bp.route('/posts/<id>', methods=['DELETE'])
+def delete(id):
+    db = get_db()
+
+    try:
+        # delete post from db
+        db.delete(db.query(Post).filter(Post.id ==id).one())
+        db.commit()
+    except:
+        print(sys.exc_info()[0])
+
+        db.rollback()
+        return jsonify(message = 'Post not found'), 404
+
+    return '', 204
+
+
     
