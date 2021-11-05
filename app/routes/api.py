@@ -70,7 +70,7 @@ def login():
 def comment():
     # connect to db and capture the posted json data.
     data = request.get_json()
-    db = get_db
+    db = get_db()
 
     try:
         # create a new comment
