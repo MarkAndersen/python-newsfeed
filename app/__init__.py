@@ -10,7 +10,7 @@ def create_app(test_config=None):
     app.url_map.strict_slashes = False
     # change in production environment to something harder to guess, this allows login sessions to be kept for the user.
     app.config.from_mapping(
-        SECRET_KEY='super_secret_key'
+        SECRET_KEY='my_first_python_app_key'
     )
 
     @app.route('/hello')
